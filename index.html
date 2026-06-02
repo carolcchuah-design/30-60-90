@@ -3,506 +3,351 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>30-60-90 Day Live Tracker</title>
+    <title>Dynamic 30-60-90 Master Kanban Tracker</title>
     <style>
         :root {
-            --bg-color: #f4f6f9;
+            --bg-app: #f0f2f5;
+            --column-bg: #e9ecef;
             --card-bg: #ffffff;
-            --text-main: #333333;
-            --border-color: #e0e0e0;
-            --primary: #4a90e2;
+            --border-color: #dee2e6;
+            --text-dark: #212529;
+            --text-muted: #6c757d;
             
-            --status-ns: #6c757d; /* Not Started */
-            --status-ip: #f39c12; /* In Progress */
-            --status-c: #2ecc71;  /* Complete */
+            --ns-color: #6c757d;
+            --ip-color: #f39c12;
+            --c-color: #2ecc71;
         }
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-main);
+            background-color: var(--bg-app);
+            color: var(--text-dark);
             margin: 0;
             padding: 20px;
         }
 
-        .container {
-            max-width: 1100px;
+        header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        h1 { margin-bottom: 5px; color: #1a252f; }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            align-items: start;
+            max-width: 1300px;
             margin: 0 auto;
         }
 
-        header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        h1 {
-            color: #2c3e50;
-            margin-bottom: 5px;
-        }
-
-        .phase-section {
-            background: var(--card-bg);
+        .column {
+            background-color: var(--column-bg);
             border-radius: 8px;
+            padding: 15px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            margin-bottom: 30px;
-            padding: 20px;
-            border-top: 5px solid var(--primary);
+            min-height: 500px;
+            display: flex;
+            flex-direction: column;
         }
 
-        .phase-30 { border-top-color: #3498db; }
-        .phase-60 { border-top-color: #9b59b6; }
-        .phase-90 { border-top-color: #e67e22; }
+        .column-header {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #cbd5e1;
+            color: #334155;
+        }
 
-        .phase-header {
+        #col-30 .column-header { border-bottom-color: #3498db; }
+        #col-60 .column-header { border-bottom-color: #9b59b6; }
+        #col-90 .column-header { border-bottom-color: #e67e22; }
+
+        .task-list {
+            flex-grow: 1;
+            min-height: 450px;
+        }
+
+        /* Task Cards */
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+            cursor: grab;
+            border-left: 5px solid var(--ns-color);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .card:active { cursor: grabbing; }
+        .card.dragging { opacity: 0.5; transform: scale(0.98); }
+
+        .card-title {
+            font-weight: bold;
+            font-size: 1rem;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+
+        .meta-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 2px solid var(--bg-color);
-            padding-bottom: 10px;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
+            gap: 10px;
         }
 
-        .phase-title {
-            font-size: 1.4rem;
-            font-weight: bold;
-            color: #2c3e50;
-        }
-
-        /* Progress Bar */
-        .progress-container {
-            width: 200px;
-            background-color: #e0e0e0;
-            border-radius: 10px;
-            position: relative;
-            height: 20px;
-        }
-
-        .progress-bar {
-            height: 100%;
-            border-radius: 10px;
-            width: 0%;
-            transition: width 0.3s ease;
-            background-color: var(--status-c);
-        }
-
-        .progress-text {
-            position: absolute;
-            width: 100%;
-            text-align: center;
-            font-size: 0.8rem;
-            font-weight: bold;
-            line-height: 20px;
-            color: #333;
-        }
-
-        /* Table Styling */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            text-align: left;
-        }
-
-        th, td {
-            padding: 12px 15px;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        th {
-            background-color: #f8f9fa;
-            font-weight: 600;
-            text-transform: uppercase;
+        input[type="date"] {
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 4px;
             font-size: 0.85rem;
-            letter-spacing: 0.5px;
         }
 
-        tr:hover {
-            background-color: #fdfdfd;
-        }
-
-        /* Interactive Elements */
         select {
-            padding: 6px 10px;
+            padding: 4px 8px;
             border-radius: 4px;
             font-weight: bold;
             color: white;
             border: none;
             cursor: pointer;
-            outline: none;
+            font-size: 0.85rem;
         }
 
-        select.ns { background-color: var(--status-ns); }
-        select.ip { background-color: var(--status-ip); }
-        select.c { background-color: var(--status-c); }
+        select.ns { background-color: var(--ns-color); }
+        select.ip { background-color: var(--ip-color); }
+        select.c { background-color: var(--c-color); }
 
-        input[type="date"] {
-            border: 1px solid var(--border-color);
+        /* Sub-tasks Section */
+        .subtasks-section {
+            margin: 10px 0;
+            background: #f8f9fa;
+            padding: 8px;
             border-radius: 4px;
-            padding: 5px;
-            font-family: inherit;
+            border: 1px dashed #cbd5e1;
         }
 
+        .subtask-item {
+            display: flex;
+            align-items: center;
+            margin: 4px 0;
+            font-size: 0.85rem;
+        }
+
+        .subtask-item input[type="checkbox"] {
+            margin-right: 8px;
+        }
+
+        .subtask-item.completed span {
+            text-decoration: line-through;
+            color: var(--text-muted);
+        }
+
+        .add-subtask-btn {
+            background: none;
+            border: none;
+            color: #4a90e2;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: bold;
+            padding: 0;
+            margin-top: 5px;
+            display: inline-block;
+        }
+
+        .add-subtask-btn:hover { text-decoration: underline; }
+
+        /* Notes text area */
         textarea {
             width: 100%;
             border: 1px solid var(--border-color);
             border-radius: 4px;
             padding: 6px;
+            font-size: 0.85rem;
             resize: vertical;
-            font-family: inherit;
             box-sizing: border-box;
-        }
-
-        textarea:focus {
-            border-color: var(--primary);
-            outline: none;
+            margin-top: 8px;
+            font-family: inherit;
         }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <header>
-        <h1>30-60-90 Day Execution Tracker</h1>
-        <p>Live interactive operational framework dashboard</p>
-    </header>
+<header>
+    <h1>30-60-90 Agile Strategy Board</h1>
+    <p>Drag & drop tasks across timeline buckets. Add custom sub-tasks seamlessly.</p>
+</header>
 
-    <div class="phase-section phase-30" id="phase1">
-        <div class="phase-header">
-            <div class="phase-title">30 Day: LAE Transition (June 2026)</div>
-            <div class="progress-container">
-                <div class="progress-bar" id="bar-p1"></div>
-                <div class="progress-text" id="text-p1">0% Complete</div>
-            </div>
-        </div>
-        <table>
-            <thead>
-                <tr>
-                    <th style="width: 35%;">Task Description</th>
-                    <th style="width: 15%;">Target Date</th>
-                    <th style="width: 15%;">Status</th>
-                    <th style="width: 35%;">Notes / Updates</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td><strong>Build AI Augmentation Framework</strong></td>
-                    <td><input type="date" value="2026-06-10" onchange="saveData()"></td>
-                    <td>
-                        <select class="ns" onchange="updateStatus(this)">
-                            <option value="ns" selected>Not Started</option>
-                            <option value="ip">In Progress</option>
-                            <option value="c">Complete</option>
-                        </select>
-                    </td>
-                    <td><textarea placeholder="Add details..." oninput="saveData()"></textarea></td>
-                </tr>
-                <tr>
-                    <td><strong>Build LAE Agents</strong> <small style="display:block; color:#666;">(Prospecting, Objection handling, FAQ, Renewal playbook)</small></td>
-                    <td><input type="date" value="2026-06-20" onchange="saveData()"></td>
-                    <td>
-                        <select class="ns" onchange="updateStatus(this)">
-                            <option value="ns" selected>Not Started</option>
-                            <option value="ip">In Progress</option>
-                            <option value="c">Complete</option>
-                        </select>
-                    </td>
-                    <td><textarea placeholder="Add details..." oninput="saveData()"></textarea></td>
-                </tr>
-                <tr>
-                    <td><strong>Learning webinar + Lead generation from Handi</strong></td>
-                    <td><input type="date" value="2026-06-30" onchange="saveData()"></td>
-                    <td>
-                        <select class="ns" onchange="updateStatus(this)">
-                            <option value="ns" selected>Not Started</option>
-                            <option value="ip">In Progress</option>
-                            <option value="c">Complete</option>
-                        </select>
-                    </td>
-                    <td><textarea placeholder="Add details..." oninput="saveData()"></textarea></td>
-                </tr>
-            </tbody>
-        </table>
+<div class="board">
+    <div class="column" id="col-30">
+        <div class="column-header">30 Day Bucket (June 2026)</div>
+        <div class="task-list" ondragover="allowDrop(event)" ondrop="drop(event, 'col-30')"></div>
     </div>
 
-    <div class="phase-section phase-60" id="phase2">
-        <div class="phase-header">
-            <div class="phase-title">60 Day: Indo TAE Transition (July 2026)*</div>
-            <div class="progress-container">
-                <div class="progress-bar" id="bar-p2"></div>
-                <div class="progress-text" id="text-p2">0% Complete</div>
-            </div>
-        </div>
-        <table>
-            <thead>
-                <tr>
-                    <th style="width: 35%;">Task Description</th>
-                    <th style="width: 15%;">Target Date</th>
-                    <th style="width: 15%;">Status</th>
-                    <th style="width: 35%;">Notes / Updates</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td><strong>Hiring (EOR + SG)</strong></td>
-                    <td><input type="date" value="2026-07-05" onchange="saveData()"></td>
-                    <td>
-                        <select class="ns" onchange="updateStatus(this)">
-                            <option value="ns" selected>Not Started</option>
-                            <option value="ip">In Progress</option>
-                            <option value="c">Complete</option>
-                        </select>
-                    </td>
-                    <td><textarea placeholder="Add details..." oninput="saveData()"></textarea></td>
-                </tr>
-                <tr>
-                    <td><strong>EOR Ramp-up</strong></td>
-                    <td><input type="date" value="2026-07-12" onchange="saveData()"></td>
-                    <td>
-                        <select class="ns" onchange="updateStatus(this)">
-                            <option value="ns" selected>Not Started</option>
-                            <option value="ip">In Progress</option>
-                            <option value="c">Complete</option>
-                        </select>
-                    </td>
-                    <td><textarea placeholder="Add details..." oninput="saveData()"></textarea></td>
-                </tr>
-                <tr>
-                    <td><strong>AI Agentic Interview</strong></td>
-                    <td><input type="date" value="2026-07-15" onchange="saveData()"></td>
-                    <td>
-                        <select class="ns" onchange="updateStatus(this)">
-                            <option value="ns" selected>Not Started</option>
-                            <option value="ip">In Progress</option>
-                            <option value="c">Complete</option>
-                        </select>
-                    </td>
-                    <td><textarea placeholder="Add details..." oninput="saveData()"></textarea></td>
-                </tr>
-                <tr>
-                    <td><strong>Team Meeting Setup</strong></td>
-                    <td><input type="date" value="2026-07-18" onchange="saveData()"></td>
-                    <td>
-                        <select class="ns" onchange="updateStatus(this)">
-                            <option value="ns" selected>Not Started</option>
-                            <option value="ip">In Progress</option>
-                            <option value="c">Complete</option>
-                        </select>
-                    </td>
-                    <td><textarea placeholder="Add details..." oninput="saveData()"></textarea></td>
-                </tr>
-                <tr>
-                    <td><strong>Territory Planning</strong></td>
-                    <td><input type="date" value="2026-07-22" onchange="saveData()"></td>
-                    <td>
-                        <select class="ns" onchange="updateStatus(this)">
-                            <option value="ns" selected>Not Started</option>
-                            <option value="ip">In Progress</option>
-                            <option value="c">Complete</option>
-                        </select>
-                    </td>
-                    <td><textarea placeholder="Add details..." oninput="saveData()"></textarea></td>
-                </tr>
-                <tr>
-                    <td><strong>Develop Op Rigor framework + expectations</strong></td>
-                    <td><input type="date" value="2026-07-25" onchange="saveData()"></td>
-                    <td>
-                        <select class="ns" onchange="updateStatus(this)">
-                            <option value="ns" selected>Not Started</option>
-                            <option value="ip">In Progress</option>
-                            <option value="c">Complete</option>
-                        </select>
-                    </td>
-                    <td><textarea placeholder="Add details..." oninput="saveData()"></textarea></td>
-                </tr>
-                <tr>
-                    <td><strong>Forecast/pipeline review</strong></td>
-                    <td><input type="date" value="2026-07-28" onchange="saveData()"></td>
-                    <td>
-                        <select class="ns" onchange="updateStatus(this)">
-                            <option value="ns" selected>Not Started</option>
-                            <option value="ip">In Progress</option>
-                            <option value="c">Complete</option>
-                        </select>
-                    </td>
-                    <td><textarea placeholder="Add details..." oninput="saveData()"></textarea></td>
-                </tr>
-                <tr>
-                    <td><strong>TAE Best practices from other regions</strong></td>
-                    <td><input type="date" value="2026-07-31" onchange="saveData()"></td>
-                    <td>
-                        <select class="ns" onchange="updateStatus(this)">
-                            <option value="ns" selected>Not Started</option>
-                            <option value="ip">In Progress</option>
-                            <option value="c">Complete</option>
-                        </select>
-                    </td>
-                    <td><textarea placeholder="Add details..." oninput="saveData()"></textarea></td>
-                </tr>
-            </tbody>
-        </table>
-        <small style="color: #7f8c8d; display:block; margin-top: 10px;">*Note: Fixed year typo from 2027 to 2026 to ensure sequence alignment.</small>
+    <div class="column" id="col-60">
+        <div class="column-header">60 Day Bucket (July 2026)</div>
+        <div class="task-list" ondragover="allowDrop(event)" ondrop="drop(event, 'col-60')"></div>
     </div>
 
-    <div class="phase-section phase-90" id="phase3">
-        <div class="phase-header">
-            <div class="phase-title">90 Day: Optimization & Scaling (August 2026)</div>
-            <div class="progress-container">
-                <div class="progress-bar" id="bar-p1"></div>
-                <div class="progress-text" id="text-p3">0% Complete</div>
-            </div>
-        </div>
-        <table>
-            <thead>
-                <tr>
-                    <th style="width: 35%;">Task Description</th>
-                    <th style="width: 15%;">Target Date</th>
-                    <th style="width: 15%;">Status</th>
-                    <th style="width: 35%;">Notes / Updates</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td><strong>Hiring Execution</strong></td>
-                    <td><input type="date" value="2026-08-05" onchange="saveData()"></td>
-                    <td>
-                        <select class="ns" onchange="updateStatus(this)">
-                            <option value="ns" selected>Not Started</option>
-                            <option value="ip">In Progress</option>
-                            <option value="c">Complete</option>
-                        </select>
-                    </td>
-                    <td><textarea placeholder="Add details..." oninput="saveData()"></textarea></td>
-                </tr>
-                <tr>
-                    <td><strong>Rep 1 on 1 coaching</strong></td>
-                    <td><input type="date" value="2026-08-12" onchange="saveData()"></td>
-                    <td>
-                        <select class="ns" onchange="updateStatus(this)">
-                            <option value="ns" selected>Not Started</option>
-                            <option value="ip">In Progress</option>
-                            <option value="c">Complete</option>
-                        </select>
-                    </td>
-                    <td><textarea placeholder="Add details..." oninput="saveData()"></textarea></td>
-                </tr>
-                <tr>
-                    <td><strong>Scaled Lead Gen</strong> <small style="display:block; color:#666;">(Webinar / Partner / Marketing / etc.)</small></td>
-                    <td><input type="date" value="2026-08-19" onchange="saveData()"></td>
-                    <td>
-                        <select class="ns" onchange="updateStatus(this)">
-                            <option value="ns" selected>Not Started</option>
-                            <option value="ip">In Progress</option>
-                            <option value="c">Complete</option>
-                        </select>
-                    </td>
-                    <td><textarea placeholder="Add details..." oninput="saveData()"></textarea></td>
-                </tr>
-                <tr>
-                    <td><strong>TAE Agentic Optimization build</strong></td>
-                    <td><input type="date" value="2026-08-25" onchange="saveData()"></td>
-                    <td>
-                        <select class="ns" onchange="updateStatus(this)">
-                            <option value="ns" selected>Not Started</option>
-                            <option value="ip">In Progress</option>
-                            <option value="c">Complete</option>
-                        </select>
-                    </td>
-                    <td><textarea placeholder="Add details..." oninput="saveData()"></textarea></td>
-                </tr>
-                <tr>
-                    <td><strong>EOR Playbook Optimization</strong></td>
-                    <td><input type="date" value="2026-08-31" onchange="saveData()"></td>
-                    <td>
-                        <select class="ns" onchange="updateStatus(this)">
-                            <option value="ns" selected>Not Started</option>
-                            <option value="ip">In Progress</option>
-                            <option value="c">Complete</option>
-                        </select>
-                    </td>
-                    <td><textarea placeholder="Add details..." oninput="saveData()"></textarea></td>
-                </tr>
-            </tbody>
-        </table>
+    <div class="column" id="col-90">
+        <div class="column-header">90 Day Bucket (August 2026)</div>
+        <div class="task-list" ondragover="allowDrop(event)" ondrop="drop(event, 'col-90')"></div>
     </div>
 </div>
 
 <script>
-    // Updates color of individual dropdowns and triggers progress updates
-    function updateStatus(selectElement) {
-        selectElement.className = selectElement.value;
-        calculateProgress();
-        saveData();
+    // Initial immutable task structure schema
+    const defaultTasks = [
+        { id: "t1", column: "col-30", title: "Build AI Augmentation Framework", date: "2026-06-10", status: "ns", notes: "", subtasks: [] },
+        { id: "t2", column: "col-30", title: "Build LAE Agents (Prospecting, Objection, FAQ, Renewal)", date: "2026-06-20", status: "ns", notes: "", subtasks: [] },
+        { id: "t3", column: "col-30", title: "Learning webinar + Lead generation from Handi", date: "2026-06-30", status: "ns", notes: "", subtasks: [] },
+        
+        { id: "t4", column: "col-60", title: "Hiring (EOR + SG)", date: "2026-07-05", status: "ns", notes: "", subtasks: [] },
+        { id: "t5", column: "col-60", title: "EOR Ramp-up", date: "2026-07-12", status: "ns", notes: "", subtasks: [] },
+        { id: "t6", column: "col-60", title: "AI Agentic Interview", date: "2026-07-15", status: "ns", notes: "", subtasks: [] },
+        { id: "t7", column: "col-60", title: "Team Meeting Setup", date: "2026-07-18", status: "ns", notes: "", subtasks: [] },
+        { id: "t8", column: "col-60", title: "Territory Planning", date: "2026-07-22", status: "ns", notes: "", subtasks: [] },
+        { id: "t9", column: "col-60", title: "Develop Op Rigor framework + expectations", date: "2026-07-25", status: "ns", notes: "", subtasks: [] },
+        { id: "t10", column: "col-60", title: "Forecast/pipeline review", date: "2026-07-28", status: "ns", notes: "", subtasks: [] },
+        { id: "t11", column: "col-60", title: "TAE Best practices from other regions", date: "2026-07-31", status: "ns", notes: "", subtasks: [] },
+        
+        { id: "t12", column: "col-90", title: "Hiring Execution", date: "2026-08-05", status: "ns", notes: "", subtasks: [] },
+        { id: "t13", column: "col-90", title: "Rep 1 on 1 coaching", date: "2026-08-12", status: "ns", notes: "", subtasks: [] },
+        { id: "t14", column: "col-90", title: "Scaled Lead Gen (Webinar/Partner/Marketing)", date: "2026-08-19", status: "ns", notes: "", subtasks: [] },
+        { id: "t15", column: "col-90", title: "TAE Agentic Optimization build", date: "2026-08-25", status: "ns", notes: "", subtasks: [] },
+        { id: "t16", column: "col-90", title: "EOR Playbook Optimization", date: "2026-08-31", status: "ns", notes: "", subtasks: [] }
+    ];
+
+    let tasks = [];
+
+    // Initialize application state
+    function init() {
+        const saved = localStorage.getItem('kanban_30_60_90_data');
+        tasks = saved ? JSON.parse(saved) : defaultTasks;
+        renderBoard();
     }
 
-    // Calculates progress metrics per phase section
-    function calculateProgress() {
-        const phases = ['phase1', 'phase2', 'phase3'];
-        
-        phases.forEach((phaseId, index) => {
-            const section = document.getElementById(phaseId);
-            const dropdowns = section.querySelectorAll('select');
-            const total = dropdowns.length;
-            let completed = 0;
+    function renderBoard() {
+        // Clear columns
+        document.querySelectorAll('.task-list').forEach(el => el.innerHTML = '');
 
-            dropdowns.forEach(select => {
-                if(select.value === 'c') completed++;
+        tasks.forEach(task => {
+            const columnEl = document.querySelector(`#${task.column} .task-list`);
+            if(!columnEl) return;
+
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.draggable = true;
+            card.id = task.id;
+            card.style.borderLeftColor = `var(--${task.status}-color)`;
+            
+            // Native Drag Events listeners
+            card.addEventListener('dragstart', (e) => {
+                card.classList.add('dragging');
+                e.dataTransfer.setData('text/plain', task.id);
+            });
+            card.addEventListener('dragend', () => card.classList.remove('dragging'));
+
+            // Build out subtasks HTML
+            let subtasksHTML = '';
+            task.subtasks.forEach((st, index) => {
+                subtasksHTML += `
+                    <div class="subtask-item ${st.done ? 'completed' : ''}">
+                        <input type="checkbox" ${st.done ? 'checked' : ''} onchange="toggleSubtask('${task.id}', ${index})">
+                        <span>${st.text}</span>
+                    </div>
+                `;
             });
 
-            const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
-            
-            // Map index to the respective progress bar elements
-            const bar = document.querySelectorAll('.progress-bar')[index];
-            const text = document.querySelectorAll('.progress-text')[index];
-            
-            if(bar && text) {
-                bar.style.width = percentage + '%';
-                text.innerText = percentage + '% Complete';
-            }
+            card.innerHTML = `
+                <div class="card-title">${task.title}</div>
+                <div class="meta-row">
+                    <input type="date" value="${task.date}" onchange="updateDate('${task.id}', this.value)">
+                    <select class="${task.status}" onchange="updateStatus('${task.id}', this)">
+                        <option value="ns" ${task.status === 'ns' ? 'selected' : ''}>Not Started</option>
+                        <option value="ip" ${task.status === 'ip' ? 'selected' : ''}>In Progress</option>
+                        <option value="c" ${task.status === 'c' ? 'selected' : ''}>Complete</option>
+                    </select>
+                </div>
+                <div class="subtasks-section">
+                    <div style="font-size:0.75rem; color:var(--text-muted); font-weight:bold; margin-bottom:4px;">SUB-TASKS:</div>
+                    ${subtasksHTML}
+                    <button class="add-subtask-btn" onclick="addSubtask('${task.id}')">+ Add Sub-task</button>
+                </div>
+                <textarea placeholder="Notes/Context..." oninput="updateNotes('${task.id}', this.value)">${task.notes || ''}</textarea>
+            `;
+
+            columnEl.appendChild(card);
         });
     }
 
-    // Saves current state of inputs to browser local storage
-    function saveData() {
-        const data = [];
-        const rows = document.querySelectorAll('tbody tr');
-        
-        rows.forEach((row, index) => {
-            const date = row.querySelector('input[type="date"]').value;
-            const status = row.querySelector('select').value;
-            const notes = row.querySelector('textarea').value;
-            data.push({ index, date, status, notes });
-        });
-        
-        localStorage.setItem('tracker_30_60_90_data', JSON.stringify(data));
+    /* Drag and Drop Core Logic */
+    function allowDrop(e) {
+        e.preventDefault();
     }
 
-    // Loads saved state from browser local storage on startup
-    function loadData() {
-        const savedData = localStorage.getItem('tracker_30_60_90_data');
-        if (!savedData) {
-            calculateProgress();
-            return;
+    function drop(e, targetColumnId) {
+        e.preventDefault();
+        const taskId = e.dataTransfer.getData('text/plain');
+        const task = tasks.find(t => t.id === taskId);
+        if(task) {
+            task.column = targetColumnId;
+            saveAndRefresh();
         }
-
-        const data = JSON.parse(savedData);
-        const rows = document.querySelectorAll('tbody tr');
-        
-        data.forEach(item => {
-            if(rows[item.index]) {
-                const row = rows[item.index];
-                row.querySelector('input[type="date"]').value = item.date;
-                
-                const select = row.querySelector('select');
-                select.value = item.status;
-                select.className = item.status;
-                
-                row.querySelector('textarea').value = item.notes;
-            }
-        });
-        calculateProgress();
     }
 
-    // Initialize application data on DOM render
-    window.onload = loadData;
+    /* Input State Mutation Handlers */
+    function updateStatus(id, selectElement) {
+        const task = tasks.find(t => t.id === id);
+        if(task) {
+            task.status = selectElement.value;
+            saveAndRefresh();
+        }
+    }
+
+    function updateDate(id, value) {
+        const task = tasks.find(t => t.id === id);
+        if(task) { task.date = value; saveState(); }
+    }
+
+    function updateNotes(id, value) {
+        const task = tasks.find(t => t.id === id);
+        if(task) { task.notes = value; saveState(); }
+    }
+
+    function addSubtask(id) {
+        const text = prompt("Enter sub-task item objective:");
+        if(!text || text.trim() === "") return;
+        
+        const task = tasks.find(t => t.id === id);
+        if(task) {
+            task.subtasks.push({ text: text.trim(), done: false });
+            saveAndRefresh();
+        }
+    }
+
+    function toggleSubtask(taskId, subtaskIndex) {
+        const task = tasks.find(t => t.id === taskId);
+        if(task && task.subtasks[subtaskIndex]) {
+            task.subtasks[subtaskIndex].done = !task.subtasks[subtaskIndex].done;
+            saveAndRefresh();
+        }
+    }
+
+    /* Storage routines */
+    function saveState() {
+        localStorage.setItem('kanban_30_60_90_data', JSON.stringify(tasks));
+    }
+
+    function saveAndRefresh() {
+        saveState();
+        renderBoard();
+    }
+
+    window.onload = init;
 </script>
 
 </body>
