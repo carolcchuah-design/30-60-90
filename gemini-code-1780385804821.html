@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>30-60-90 Day Live Tracker</title>
+    <style>
+        :root {
+            --bg-color: #f4f6f9;
+            --card-bg: #ffffff;
+            --text-main: #333333;
+            --border-color: #e0e0e0;
+            --primary: #4a90e2;
+            
+            --status-ns: #6c757d; /* Not Started */
+            --status-ip: #f39c12; /* In Progress */
+            --status-c: #2ecc71;  /* Complete */
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .phase-section {
+            background: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+            padding: 20px;
+            border-top: 5px solid var(--primary);
+        }
+
+        .phase-30 { border-top-color: #3498db; }
+        .phase-60 { border-top-color: #9b59b6; }
+        .phase-90 { border-top-color: #e67e22; }
+
+        .phase-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--bg-color);
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .phase-title {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            width: 200px;
+            background-color: #e0e0e0;
+            border-radius: 10px;
+            position: relative;
+            height: 20px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            border-radius: 10px;
+            width: 0%;
+            transition: width 0.3s ease;
+            background-color: var(--status-c);
+        }
+
+        .progress-text {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            font-size: 0.8rem;
+            font-weight: bold;
+            line-height: 20px;
+            color: #333;
+        }
+
+        /* Table Styling */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+        }
+
+        tr:hover {
+            background-color: #fdfdfd;
+        }
+
+        /* Interactive Elements */
+        select {
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            color: white;
+            border: none;
+            cursor: pointer;
+            outline: none;
+        }
+
+        select.ns { background-color: var(--status-ns); }
+        select.ip { background-color: var(--status-ip); }
+        select.c { background-color: var(--status-c); }
+
+        input[type="date"] {
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 5px;
+            font-family: inherit;
+        }
+
+        textarea {
+            width: 100%;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 6px;
+            resize: vertical;
+            font-family: inherit;
+            box-sizing: border-box;
+        }
+
+        textarea:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>30-60-90 Day Execution Tracker</h1>
+        <p>Live interactive operational framework dashboard</p>
+    </header>
+
+    <div class="phase-section phase-30" id="phase1">
+        <div class="phase-header">
+            <div class="phase-title">30 Day: LAE Transition (June 2026)</div>
+            <div class="progress-container">
+                <div class="progress-bar" id="bar-p1"></div>
+                <div class="progress-text" id="text-p1">0% Complete</div>
+            </div>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 35%;">Task Description</th>
+                    <th style="width: 15%;">Target Date</th>
+                    <th style="width: 15%;">Status</th>
+                    <th style="width: 35%;">Notes / Updates</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Build AI Augmentation Framework</strong></td>
+                    <td><input type="date" value="2026-06-10" onchange="saveData()"></td>
+                    <td>
+                        <select class="ns" onchange="updateStatus(this)">
+                            <option value="ns" selected>Not Started</option>
+                            <option value="ip">In Progress</option>
+                            <option value="c">Complete</option>
+                        </select>
+                    </td>
+                    <td><textarea placeholder="Add details..." oninput="saveData()"></textarea></td>
+                </tr>
+                <tr>
+                    <td><strong>Build LAE Agents</strong> <small style="display:block; color:#666;">(Prospecting, Objection handling, FAQ, Renewal playbook)</small></td>
+                    <td><input type="date" value="2026-06-20" onchange="saveData()"></td>
+                    <td>
+                        <select class="ns" onchange="updateStatus(this)">
+                            <option value="ns" selected>Not Started</option>
+                            <option value="ip">In Progress</option>
+                            <option value="c">Complete</option>
+                        </select>
+                    </td>
+                    <td><textarea placeholder="Add details..." oninput="saveData()"></textarea></td>
+                </tr>
+                <tr>
+                    <td><strong>Learning webinar + Lead generation from Handi</strong></td>
+                    <td><input type="date" value="2026-06-30" onchange="saveData()"></td>
+                    <td>
+                        <select class="ns" onchange="updateStatus(this)">
+                            <option value="ns" selected>Not Started</option>
+                            <option value="ip">In Progress</option>
+                            <option value="c">Complete</option>
+                        </select>
+                    </td>
+                    <td><textarea placeholder="Add details..." oninput="saveData()"></textarea></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="phase-section phase-60" id="phase2">
+        <div class="phase-header">
+            <div class="phase-title">60 Day: Indo TAE Transition (July 2026)*</div>
+            <div class="progress-container">
+                <div class="progress-bar" id="bar-p2"></div>
+                <div class="progress-text" id="text-p2">0% Complete</div>
+            </div>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 35%;">Task Description</th>
+                    <th style="width: 15%;">Target Date</th>
+                    <th style="width: 15%;">Status</th>
+                    <th style="width: 35%;">Notes / Updates</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Hiring (EOR + SG)</strong></td>
+                    <td><input type="date" value="2026-07-05" onchange="saveData()"></td>
+                    <td>
+                        <select class="ns" onchange="updateStatus(this)">
+                            <option value="ns" selected>Not Started</option>
+                            <option value="ip">In Progress</option>
+                            <option value="c">Complete</option>
+                        </select>
+                    </td>
+                    <td><textarea placeholder="Add details..." oninput="saveData()"></textarea></td>
+                </tr>
+                <tr>
+                    <td><strong>EOR Ramp-up</strong></td>
+                    <td><input type="date" value="2026-07-12" onchange="saveData()"></td>
+                    <td>
+                        <select class="ns" onchange="updateStatus(this)">
+                            <option value="ns" selected>Not Started</option>
+                            <option value="ip">In Progress</option>
+                            <option value="c">Complete</option>
+                        </select>
+                    </td>
+                    <td><textarea placeholder="Add details..." oninput="saveData()"></textarea></td>
+                </tr>
+                <tr>
+                    <td><strong>AI Agentic Interview</strong></td>
+                    <td><input type="date" value="2026-07-15" onchange="saveData()"></td>
+                    <td>
+                        <select class="ns" onchange="updateStatus(this)">
+                            <option value="ns" selected>Not Started</option>
+                            <option value="ip">In Progress</option>
+                            <option value="c">Complete</option>
+                        </select>
+                    </td>
+                    <td><textarea placeholder="Add details..." oninput="saveData()"></textarea></td>
+                </tr>
+                <tr>
+                    <td><strong>Team Meeting Setup</strong></td>
+                    <td><input type="date" value="2026-07-18" onchange="saveData()"></td>
+                    <td>
+                        <select class="ns" onchange="updateStatus(this)">
+                            <option value="ns" selected>Not Started</option>
+                            <option value="ip">In Progress</option>
+                            <option value="c">Complete</option>
+                        </select>
+                    </td>
+                    <td><textarea placeholder="Add details..." oninput="saveData()"></textarea></td>
+                </tr>
+                <tr>
+                    <td><strong>Territory Planning</strong></td>
+                    <td><input type="date" value="2026-07-22" onchange="saveData()"></td>
+                    <td>
+                        <select class="ns" onchange="updateStatus(this)">
+                            <option value="ns" selected>Not Started</option>
+                            <option value="ip">In Progress</option>
+                            <option value="c">Complete</option>
+                        </select>
+                    </td>
+                    <td><textarea placeholder="Add details..." oninput="saveData()"></textarea></td>
+                </tr>
+                <tr>
+                    <td><strong>Develop Op Rigor framework + expectations</strong></td>
+                    <td><input type="date" value="2026-07-25" onchange="saveData()"></td>
+                    <td>
+                        <select class="ns" onchange="updateStatus(this)">
+                            <option value="ns" selected>Not Started</option>
+                            <option value="ip">In Progress</option>
+                            <option value="c">Complete</option>
+                        </select>
+                    </td>
+                    <td><textarea placeholder="Add details..." oninput="saveData()"></textarea></td>
+                </tr>
+                <tr>
+                    <td><strong>Forecast/pipeline review</strong></td>
+                    <td><input type="date" value="2026-07-28" onchange="saveData()"></td>
+                    <td>
+                        <select class="ns" onchange="updateStatus(this)">
+                            <option value="ns" selected>Not Started</option>
+                            <option value="ip">In Progress</option>
+                            <option value="c">Complete</option>
+                        </select>
+                    </td>
+                    <td><textarea placeholder="Add details..." oninput="saveData()"></textarea></td>
+                </tr>
+                <tr>
+                    <td><strong>TAE Best practices from other regions</strong></td>
+                    <td><input type="date" value="2026-07-31" onchange="saveData()"></td>
+                    <td>
+                        <select class="ns" onchange="updateStatus(this)">
+                            <option value="ns" selected>Not Started</option>
+                            <option value="ip">In Progress</option>
+                            <option value="c">Complete</option>
+                        </select>
+                    </td>
+                    <td><textarea placeholder="Add details..." oninput="saveData()"></textarea></td>
+                </tr>
+            </tbody>
+        </table>
+        <small style="color: #7f8c8d; display:block; margin-top: 10px;">*Note: Fixed year typo from 2027 to 2026 to ensure sequence alignment.</small>
+    </div>
+
+    <div class="phase-section phase-90" id="phase3">
+        <div class="phase-header">
+            <div class="phase-title">90 Day: Optimization & Scaling (August 2026)</div>
+            <div class="progress-container">
+                <div class="progress-bar" id="bar-p1"></div>
+                <div class="progress-text" id="text-p3">0% Complete</div>
+            </div>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 35%;">Task Description</th>
+                    <th style="width: 15%;">Target Date</th>
+                    <th style="width: 15%;">Status</th>
+                    <th style="width: 35%;">Notes / Updates</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Hiring Execution</strong></td>
+                    <td><input type="date" value="2026-08-05" onchange="saveData()"></td>
+                    <td>
+                        <select class="ns" onchange="updateStatus(this)">
+                            <option value="ns" selected>Not Started</option>
+                            <option value="ip">In Progress</option>
+                            <option value="c">Complete</option>
+                        </select>
+                    </td>
+                    <td><textarea placeholder="Add details..." oninput="saveData()"></textarea></td>
+                </tr>
+                <tr>
+                    <td><strong>Rep 1 on 1 coaching</strong></td>
+                    <td><input type="date" value="2026-08-12" onchange="saveData()"></td>
+                    <td>
+                        <select class="ns" onchange="updateStatus(this)">
+                            <option value="ns" selected>Not Started</option>
+                            <option value="ip">In Progress</option>
+                            <option value="c">Complete</option>
+                        </select>
+                    </td>
+                    <td><textarea placeholder="Add details..." oninput="saveData()"></textarea></td>
+                </tr>
+                <tr>
+                    <td><strong>Scaled Lead Gen</strong> <small style="display:block; color:#666;">(Webinar / Partner / Marketing / etc.)</small></td>
+                    <td><input type="date" value="2026-08-19" onchange="saveData()"></td>
+                    <td>
+                        <select class="ns" onchange="updateStatus(this)">
+                            <option value="ns" selected>Not Started</option>
+                            <option value="ip">In Progress</option>
+                            <option value="c">Complete</option>
+                        </select>
+                    </td>
+                    <td><textarea placeholder="Add details..." oninput="saveData()"></textarea></td>
+                </tr>
+                <tr>
+                    <td><strong>TAE Agentic Optimization build</strong></td>
+                    <td><input type="date" value="2026-08-25" onchange="saveData()"></td>
+                    <td>
+                        <select class="ns" onchange="updateStatus(this)">
+                            <option value="ns" selected>Not Started</option>
+                            <option value="ip">In Progress</option>
+                            <option value="c">Complete</option>
+                        </select>
+                    </td>
+                    <td><textarea placeholder="Add details..." oninput="saveData()"></textarea></td>
+                </tr>
+                <tr>
+                    <td><strong>EOR Playbook Optimization</strong></td>
+                    <td><input type="date" value="2026-08-31" onchange="saveData()"></td>
+                    <td>
+                        <select class="ns" onchange="updateStatus(this)">
+                            <option value="ns" selected>Not Started</option>
+                            <option value="ip">In Progress</option>
+                            <option value="c">Complete</option>
+                        </select>
+                    </td>
+                    <td><textarea placeholder="Add details..." oninput="saveData()"></textarea></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    // Updates color of individual dropdowns and triggers progress updates
+    function updateStatus(selectElement) {
+        selectElement.className = selectElement.value;
+        calculateProgress();
+        saveData();
+    }
+
+    // Calculates progress metrics per phase section
+    function calculateProgress() {
+        const phases = ['phase1', 'phase2', 'phase3'];
+        
+        phases.forEach((phaseId, index) => {
+            const section = document.getElementById(phaseId);
+            const dropdowns = section.querySelectorAll('select');
+            const total = dropdowns.length;
+            let completed = 0;
+
+            dropdowns.forEach(select => {
+                if(select.value === 'c') completed++;
+            });
+
+            const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+            
+            // Map index to the respective progress bar elements
+            const bar = document.querySelectorAll('.progress-bar')[index];
+            const text = document.querySelectorAll('.progress-text')[index];
+            
+            if(bar && text) {
+                bar.style.width = percentage + '%';
+                text.innerText = percentage + '% Complete';
+            }
+        });
+    }
+
+    // Saves current state of inputs to browser local storage
+    function saveData() {
+        const data = [];
+        const rows = document.querySelectorAll('tbody tr');
+        
+        rows.forEach((row, index) => {
+            const date = row.querySelector('input[type="date"]').value;
+            const status = row.querySelector('select').value;
+            const notes = row.querySelector('textarea').value;
+            data.push({ index, date, status, notes });
+        });
+        
+        localStorage.setItem('tracker_30_60_90_data', JSON.stringify(data));
+    }
+
+    // Loads saved state from browser local storage on startup
+    function loadData() {
+        const savedData = localStorage.getItem('tracker_30_60_90_data');
+        if (!savedData) {
+            calculateProgress();
+            return;
+        }
+
+        const data = JSON.parse(savedData);
+        const rows = document.querySelectorAll('tbody tr');
+        
+        data.forEach(item => {
+            if(rows[item.index]) {
+                const row = rows[item.index];
+                row.querySelector('input[type="date"]').value = item.date;
+                
+                const select = row.querySelector('select');
+                select.value = item.status;
+                select.className = item.status;
+                
+                row.querySelector('textarea').value = item.notes;
+            }
+        });
+        calculateProgress();
+    }
+
+    // Initialize application data on DOM render
+    window.onload = loadData;
+</script>
+
+</body>
+</html>
